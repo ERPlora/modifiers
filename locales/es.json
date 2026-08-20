@@ -1,0 +1,28 @@
+{
+  "name": "Modificadores",
+  "navigation": {
+    "groups": {
+      "label": "Modificadores"
+    }
+  },
+  "ui": {
+    "title": "Modificadores",
+    "colName": "Nombre",
+    "colKitchen": "En la comanda",
+    "colChoice": "Elección",
+    "colOrder": "Orden",
+    "fieldName": "Nombre",
+    "fieldKitchenName": "Nombre en la comanda",
+    "fieldMin": "Mínimo (1 o más = obligatorio)",
+    "fieldMax": "Máximo (0 = sin techo)",
+    "actionAdd": "Añadir",
+    "actionSaving": "Guardando…",
+    "search": "Buscar…",
+    "loading": "Cargando…",
+    "empty": "Todavía no hay grupos de modificadores.",
+    "errCreateGroup": "No se pudo crear el grupo",
+    "choiceRequired": "Obligatorio (mín. {min})",
+    "choiceOptional": "Opcional",
+    "choiceMax": "máx. {max}"
+  }
+}

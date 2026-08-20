@@ -3097,7 +3097,68 @@ function createListController(client, queryName, onChange = () => {
   return new ListController(client, queryName, onChange, opts);
 }
 
+// locales/es.json
+var es_default = {
+  name: "Modificadores",
+  navigation: {
+    groups: {
+      label: "Modificadores"
+    }
+  },
+  ui: {
+    title: "Modificadores",
+    colName: "Nombre",
+    colKitchen: "En la comanda",
+    colChoice: "Elecci\xF3n",
+    colOrder: "Orden",
+    fieldName: "Nombre",
+    fieldKitchenName: "Nombre en la comanda",
+    fieldMin: "M\xEDnimo (1 o m\xE1s = obligatorio)",
+    fieldMax: "M\xE1ximo (0 = sin techo)",
+    actionAdd: "A\xF1adir",
+    actionSaving: "Guardando\u2026",
+    search: "Buscar\u2026",
+    loading: "Cargando\u2026",
+    empty: "Todav\xEDa no hay grupos de modificadores.",
+    errCreateGroup: "No se pudo crear el grupo",
+    choiceRequired: "Obligatorio (m\xEDn. {min})",
+    choiceOptional: "Opcional",
+    choiceMax: "m\xE1x. {max}"
+  }
+};
+
+// locales/en.json
+var en_default = {
+  name: "Modifiers",
+  navigation: {
+    groups: {
+      label: "Modifiers"
+    }
+  },
+  ui: {
+    title: "Modifiers",
+    colName: "Name",
+    colKitchen: "On the kitchen ticket",
+    colChoice: "Choice",
+    colOrder: "Order",
+    fieldName: "Name",
+    fieldKitchenName: "Kitchen ticket name",
+    fieldMin: "Minimum (1 or more = required)",
+    fieldMax: "Maximum (0 = no ceiling)",
+    actionAdd: "Add",
+    actionSaving: "Saving\u2026",
+    search: "Search\u2026",
+    loading: "Loading\u2026",
+    empty: "No modifier groups yet.",
+    errCreateGroup: "The group could not be created",
+    choiceRequired: "Required (min. {min})",
+    choiceOptional: "Optional",
+    choiceMax: "max. {max}"
+  }
+};
+
 // ui/components/erp-modifiers-groups/erp-modifiers-groups.ts
+var CATALOG = { es: es_default, en: en_default };
 function erplora() {
   const c5 = globalThis.erplora;
   if (!c5) throw new Error("erplora SDK no inicializado por el shell");
@@ -3112,30 +3173,6 @@ var ErpModifiersGroups = class extends i3 {
     this.newMax = 0;
     this.saving = false;
     this.formError = "";
-    this.columns = [
-      { key: "name", header: "Nombre", sortable: true, filterable: true, filterType: "text" },
-      {
-        key: "kitchen_name",
-        header: "En cocina",
-        sortable: false,
-        // Vacío = la comanda usa el nombre comercial (regla de Toast).
-        format: (r6) => String(r6.kitchen_name || r6.name)
-      },
-      {
-        key: "min_choices",
-        header: "Elecci\xF3n",
-        sortable: true,
-        // La obligatoriedad NO es un campo: se lee de min_choices. Se pinta así para que el usuario
-        // vea la misma regla que aplica el TPV, en vez de una casilla que miente.
-        format: (r6) => {
-          const min = Number(r6.min_choices ?? 0);
-          const max = Number(r6.max_choices ?? 0);
-          const req = min >= 1 ? `Obligatorio (m\xEDn. ${min})` : "Opcional";
-          return max > 0 ? `${req} \xB7 m\xE1x. ${max}` : req;
-        }
-      },
-      { key: "sort_order", header: "Orden", align: "right", sortable: true }
-    ];
   }
   static {
     this.styles = i`
@@ -3145,6 +3182,33 @@ var ErpModifiersGroups = class extends i3 {
     .form { display:flex; gap:.5rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 1rem; }
     .err { color:#d9480f; font-weight:600; }
   `;
+  }
+  get columns() {
+    const t5 = (k2) => erplora().t(CATALOG, k2);
+    return [
+      { key: "name", header: t5("ui.colName"), sortable: true, filterable: true, filterType: "text" },
+      {
+        key: "kitchen_name",
+        header: t5("ui.colKitchen"),
+        sortable: false,
+        // Vacío = la comanda usa el nombre comercial (regla de Toast).
+        format: (r6) => String(r6.kitchen_name || r6.name)
+      },
+      {
+        key: "min_choices",
+        header: t5("ui.colChoice"),
+        sortable: true,
+        // La obligatoriedad NO es un campo: se lee de min_choices. Se pinta así para que el usuario
+        // vea la misma regla que aplica el TPV, en vez de una casilla que pueda contradecirla.
+        format: (r6) => {
+          const min = Number(r6.min_choices ?? 0);
+          const max = Number(r6.max_choices ?? 0);
+          const base = min >= 1 ? t5("ui.choiceRequired").replace("{min}", String(min)) : t5("ui.choiceOptional");
+          return max > 0 ? `${base} \xB7 ${t5("ui.choiceMax").replace("{max}", String(max))}` : base;
+        }
+      },
+      { key: "sort_order", header: t5("ui.colOrder"), align: "right", sortable: true }
+    ];
   }
   async firstUpdated() {
     this.ctrl = createListController(
@@ -3173,30 +3237,31 @@ var ErpModifiersGroups = class extends i3 {
       this.newMax = 0;
       await this.ctrl.load();
     } catch (e5) {
-      this.formError = e5 instanceof Error ? e5.message : "No se pudo crear";
+      this.formError = e5 instanceof Error ? e5.message : erplora().t(CATALOG, "ui.errCreateGroup");
     } finally {
       this.saving = false;
     }
   }
   render() {
+    const t5 = (k2) => erplora().t(CATALOG, k2);
     return b2`
       <div>
-        <header><h2>Modificadores</h2></header>
+        <header><h2>${t5("ui.title")}</h2></header>
         <form class="form" @submit=${(e5) => this.create(e5)}>
-          <ion-input mode="md" fill="outline" label-placement="floating" label="Nombre"
+          <ion-input mode="md" fill="outline" label-placement="floating" label=${t5("ui.fieldName")}
             .value=${this.newName}
             @ionInput=${(e5) => this.newName = e5.target.value}></ion-input>
-          <ion-input mode="md" fill="outline" label-placement="floating" label="Nombre en cocina"
+          <ion-input mode="md" fill="outline" label-placement="floating" label=${t5("ui.fieldKitchenName")}
             .value=${this.newKitchenName}
             @ionInput=${(e5) => this.newKitchenName = e5.target.value}></ion-input>
           <ion-input mode="md" fill="outline" type="number" min="0" label-placement="floating"
-            label="Mínimo (1 o más = obligatorio)" .value=${String(this.newMin)}
+            label=${t5("ui.fieldMin")} .value=${String(this.newMin)}
             @ionInput=${(e5) => this.newMin = Number(e5.target.value) || 0}></ion-input>
           <ion-input mode="md" fill="outline" type="number" min="0" label-placement="floating"
-            label="Máximo (0 = sin techo)" .value=${String(this.newMax)}
+            label=${t5("ui.fieldMax")} .value=${String(this.newMax)}
             @ionInput=${(e5) => this.newMax = Number(e5.target.value) || 0}></ion-input>
           <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newName}>
-            ${this.saving ? "Guardando\u2026" : "A\xF1adir"}
+            ${this.saving ? t5("ui.actionSaving") : t5("ui.actionAdd")}
           </ion-button>
         </form>
         ${this.formError ? b2`<p class="err">${this.formError}</p>` : A}
@@ -3211,8 +3276,8 @@ var ErpModifiersGroups = class extends i3 {
           .sort=${this.ctrl?.state.sort}
           .sortDir=${this.ctrl?.state.dir ?? "asc"}
           .searchable=${true}
-          .searchPlaceholder=${"Buscar\u2026"}
-          .emptyMessage=${this.ctrl?.loading ? "Cargando\u2026" : "Todav\xEDa no hay grupos de modificadores."}
+          .searchPlaceholder=${t5("ui.search")}
+          .emptyMessage=${this.ctrl?.loading ? t5("ui.loading") : t5("ui.empty")}
           @pageChange=${(e5) => this.ctrl.setPage(e5.detail)}
           @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)}
           @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)}

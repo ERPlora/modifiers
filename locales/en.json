@@ -1,0 +1,28 @@
+{
+  "name": "Modifiers",
+  "navigation": {
+    "groups": {
+      "label": "Modifiers"
+    }
+  },
+  "ui": {
+    "title": "Modifiers",
+    "colName": "Name",
+    "colKitchen": "On the kitchen ticket",
+    "colChoice": "Choice",
+    "colOrder": "Order",
+    "fieldName": "Name",
+    "fieldKitchenName": "Kitchen ticket name",
+    "fieldMin": "Minimum (1 or more = required)",
+    "fieldMax": "Maximum (0 = no ceiling)",
+    "actionAdd": "Add",
+    "actionSaving": "Saving…",
+    "search": "Search…",
+    "loading": "Loading…",
+    "empty": "No modifier groups yet.",
+    "errCreateGroup": "The group could not be created",
+    "choiceRequired": "Required (min. {min})",
+    "choiceOptional": "Optional",
+    "choiceMax": "max. {max}"
+  }
+}

@@ -6,6 +6,11 @@ import '@erplora/outfitkit/ok-data-table';
 import type { DataTableColumn } from '@erplora/outfitkit';
 import { createListController } from '@erplora/module-sdk';
 import type { ListController, ListClient, ListParams, ListPage } from '@erplora/module-sdk';
+// Catálogo i18n del módulo (ADR-0055/0199): esbuild inlinea estos JSON en el `dist` del WC. El
+// inglés es el idioma FUENTE y el español su traducción — ninguna cadena visible se hardcodea.
+import esLocale from '../../../locales/es.json';
+import enLocale from '../../../locales/en.json';
+const CATALOG: Record<string, unknown> = { es: esLocale, en: enLocale };
 
 // Web Component del módulo 'modifiers' (Lit). Mini-app: NO toca la BD; llama al SDK
 // (erplora.query/queryPage/command/on). El cliente se obtiene de globalThis.erplora
@@ -52,30 +57,35 @@ export class ErpModifiersGroups extends LitElement {
 
   private ctrl!: ListController<Item>;
 
-  private columns: DataTableColumn[] = [
-    { key: 'name', header: 'Nombre', sortable: true, filterable: true, filterType: 'text' },
-    {
-      key: 'kitchen_name',
-      header: 'En cocina',
-      sortable: false,
-      // Vacío = la comanda usa el nombre comercial (regla de Toast).
-      format: (r) => String(r.kitchen_name || r.name),
-    },
-    {
-      key: 'min_choices',
-      header: 'Elección',
-      sortable: true,
-      // La obligatoriedad NO es un campo: se lee de min_choices. Se pinta así para que el usuario
-      // vea la misma regla que aplica el TPV, en vez de una casilla que miente.
-      format: (r) => {
-        const min = Number(r.min_choices ?? 0);
-        const max = Number(r.max_choices ?? 0);
-        const req = min >= 1 ? `Obligatorio (mín. ${min})` : 'Opcional';
-        return max > 0 ? `${req} · máx. ${max}` : req;
+  private get columns(): DataTableColumn[] {
+    const t = (k: string): string => erplora().t(CATALOG, k);
+    return [
+      { key: 'name', header: t('ui.colName'), sortable: true, filterable: true, filterType: 'text' },
+      {
+        key: 'kitchen_name',
+        header: t('ui.colKitchen'),
+        sortable: false,
+        // Vacío = la comanda usa el nombre comercial (regla de Toast).
+        format: (r) => String(r.kitchen_name || r.name),
       },
-    },
-    { key: 'sort_order', header: 'Orden', align: 'right', sortable: true },
-  ];
+      {
+        key: 'min_choices',
+        header: t('ui.colChoice'),
+        sortable: true,
+        // La obligatoriedad NO es un campo: se lee de min_choices. Se pinta así para que el usuario
+        // vea la misma regla que aplica el TPV, en vez de una casilla que pueda contradecirla.
+        format: (r) => {
+          const min = Number(r.min_choices ?? 0);
+          const max = Number(r.max_choices ?? 0);
+          const base = min >= 1
+            ? t('ui.choiceRequired').replace('{min}', String(min))
+            : t('ui.choiceOptional');
+          return max > 0 ? `${base} · ${t('ui.choiceMax').replace('{max}', String(max))}` : base;
+        },
+      },
+      { key: 'sort_order', header: t('ui.colOrder'), align: 'right', sortable: true },
+    ];
+  }
 
 
   async firstUpdated(): Promise<void> {
@@ -106,31 +116,34 @@ export class ErpModifiersGroups extends LitElement {
       this.newMax = 0;
       await this.ctrl.load();
     } catch (e) {
-      this.formError = e instanceof Error ? e.message : 'No se pudo crear';
+      this.formError = e instanceof Error
+        ? e.message
+        : erplora().t(CATALOG, 'ui.errCreateGroup');
     } finally {
       this.saving = false;
     }
   }
 
   render() {
+    const t = (k: string): string => erplora().t(CATALOG, k);
     return html`
       <div>
-        <header><h2>Modificadores</h2></header>
+        <header><h2>${t('ui.title')}</h2></header>
         <form class="form" @submit=${(e: Event) => this.create(e)}>
-          <ion-input mode="md" fill="outline" label-placement="floating" label="Nombre"
+          <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.fieldName')}
             .value=${this.newName}
             @ionInput=${(e: Event) => (this.newName = (e.target as HTMLInputElement).value)}></ion-input>
-          <ion-input mode="md" fill="outline" label-placement="floating" label="Nombre en cocina"
+          <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.fieldKitchenName')}
             .value=${this.newKitchenName}
             @ionInput=${(e: Event) => (this.newKitchenName = (e.target as HTMLInputElement).value)}></ion-input>
           <ion-input mode="md" fill="outline" type="number" min="0" label-placement="floating"
-            label="Mínimo (1 o más = obligatorio)" .value=${String(this.newMin)}
+            label=${t('ui.fieldMin')} .value=${String(this.newMin)}
             @ionInput=${(e: Event) => (this.newMin = Number((e.target as HTMLInputElement).value) || 0)}></ion-input>
           <ion-input mode="md" fill="outline" type="number" min="0" label-placement="floating"
-            label="Máximo (0 = sin techo)" .value=${String(this.newMax)}
+            label=${t('ui.fieldMax')} .value=${String(this.newMax)}
             @ionInput=${(e: Event) => (this.newMax = Number((e.target as HTMLInputElement).value) || 0)}></ion-input>
           <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newName}>
-            ${this.saving ? 'Guardando…' : 'Añadir'}
+            ${this.saving ? t('ui.actionSaving') : t('ui.actionAdd')}
           </ion-button>
         </form>
         ${this.formError ? html`<p class="err">${this.formError}</p>` : nothing}
@@ -145,8 +158,8 @@ export class ErpModifiersGroups extends LitElement {
           .sort=${this.ctrl?.state.sort}
           .sortDir=${this.ctrl?.state.dir ?? 'asc'}
           .searchable=${true}
-          .searchPlaceholder=${'Buscar…'}
-          .emptyMessage=${this.ctrl?.loading ? 'Cargando…' : 'Todavía no hay grupos de modificadores.'}
+          .searchPlaceholder=${t('ui.search')}
+          .emptyMessage=${this.ctrl?.loading ? t('ui.loading') : t('ui.empty')}
           @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)}
           @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) =>
             this.ctrl.setSort(e.detail.sort, e.detail.dir)}
