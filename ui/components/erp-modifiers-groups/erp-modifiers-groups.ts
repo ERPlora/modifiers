@@ -31,7 +31,7 @@ function erplora(): ErploraClientLike {
   return c;
 }
 
-export class ErpModifiersItems extends LitElement {
+export class ErpModifiersGroups extends LitElement {
   static styles = css`
     :host { display:block; font-family: system-ui, sans-serif; color: var(--ion-text-color, #1c1b18); }
     header { display:flex; gap:.5rem; align-items:center; margin-bottom:.75rem; }
@@ -41,7 +41,12 @@ export class ErpModifiersItems extends LitElement {
   `;
 
   @state() private newName = '';
-  @state() private newCode = '';
+  @state() private newKitchenName = '';
+  /** `>= 1` ES la obligatoriedad del grupo (ADR-0376). No hay casilla «obligatorio»: un solo
+   *  control con dos efectos es el footgun documentado de Square. */
+  @state() private newMin = 0;
+  /** `0` = sin techo. */
+  @state() private newMax = 0;
   @state() private saving = false;
   @state() private formError = '';
 
@@ -49,24 +54,36 @@ export class ErpModifiersItems extends LitElement {
 
   private columns: DataTableColumn[] = [
     { key: 'name', header: 'Nombre', sortable: true, filterable: true, filterType: 'text' },
-    { key: 'code', header: 'Código', sortable: true, filterable: true, filterType: 'text' },
     {
-      key: 'amount',
-      header: 'Importe',
-      align: 'right',
-      sortable: true,
-      filterable: true,
-      filterType: 'range',
-      format: (r) => Number(r.amount).toFixed(2),
+      key: 'kitchen_name',
+      header: 'En cocina',
+      sortable: false,
+      // Vacío = la comanda usa el nombre comercial (regla de Toast).
+      format: (r) => String(r.kitchen_name || r.name),
     },
+    {
+      key: 'min_choices',
+      header: 'Elección',
+      sortable: true,
+      // La obligatoriedad NO es un campo: se lee de min_choices. Se pinta así para que el usuario
+      // vea la misma regla que aplica el TPV, en vez de una casilla que miente.
+      format: (r) => {
+        const min = Number(r.min_choices ?? 0);
+        const max = Number(r.max_choices ?? 0);
+        const req = min >= 1 ? `Obligatorio (mín. ${min})` : 'Opcional';
+        return max > 0 ? `${req} · máx. ${max}` : req;
+      },
+    },
+    { key: 'sort_order', header: 'Orden', align: 'right', sortable: true },
   ];
+
 
   async firstUpdated(): Promise<void> {
     this.ctrl = createListController<Item>(
       erplora(),
-      'modifiers.items.list',
+      'modifiers.groups.list',
       () => this.requestUpdate(),
-      { pageSize: 50, sort: 'name', dir: 'asc' },
+      { pageSize: 50, sort: 'sort_order', dir: 'asc' },
     );
     await this.ctrl.load();
   }
@@ -77,13 +94,16 @@ export class ErpModifiersItems extends LitElement {
     this.saving = true;
     this.formError = '';
     try {
-      await erplora().command('modifiers.items.create', {
+      await erplora().command('modifiers.groups.create', {
         name: this.newName.trim(),
-        code: this.newCode.trim(),
-        amount: 0,
+        kitchen_name: this.newKitchenName.trim(),
+        min_choices: this.newMin,
+        max_choices: this.newMax,
       });
       this.newName = '';
-      this.newCode = '';
+      this.newKitchenName = '';
+      this.newMin = 0;
+      this.newMax = 0;
       await this.ctrl.load();
     } catch (e) {
       this.formError = e instanceof Error ? e.message : 'No se pudo crear';
@@ -95,12 +115,20 @@ export class ErpModifiersItems extends LitElement {
   render() {
     return html`
       <div>
-        <header><h2>Items</h2></header>
+        <header><h2>Modificadores</h2></header>
         <form class="form" @submit=${(e: Event) => this.create(e)}>
-          <ion-input placeholder="Nombre" .value=${this.newName}
+          <ion-input mode="md" fill="outline" label-placement="floating" label="Nombre"
+            .value=${this.newName}
             @ionInput=${(e: Event) => (this.newName = (e.target as HTMLInputElement).value)}></ion-input>
-          <ion-input placeholder="Código" .value=${this.newCode}
-            @ionInput=${(e: Event) => (this.newCode = (e.target as HTMLInputElement).value)}></ion-input>
+          <ion-input mode="md" fill="outline" label-placement="floating" label="Nombre en cocina"
+            .value=${this.newKitchenName}
+            @ionInput=${(e: Event) => (this.newKitchenName = (e.target as HTMLInputElement).value)}></ion-input>
+          <ion-input mode="md" fill="outline" type="number" min="0" label-placement="floating"
+            label="Mínimo (1 o más = obligatorio)" .value=${String(this.newMin)}
+            @ionInput=${(e: Event) => (this.newMin = Number((e.target as HTMLInputElement).value) || 0)}></ion-input>
+          <ion-input mode="md" fill="outline" type="number" min="0" label-placement="floating"
+            label="Máximo (0 = sin techo)" .value=${String(this.newMax)}
+            @ionInput=${(e: Event) => (this.newMax = Number((e.target as HTMLInputElement).value) || 0)}></ion-input>
           <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newName}>
             ${this.saving ? 'Guardando…' : 'Añadir'}
           </ion-button>
@@ -118,7 +146,7 @@ export class ErpModifiersItems extends LitElement {
           .sortDir=${this.ctrl?.state.dir ?? 'asc'}
           .searchable=${true}
           .searchPlaceholder=${'Buscar…'}
-          .emptyMessage=${this.ctrl?.loading ? 'Cargando…' : 'Sin datos.'}
+          .emptyMessage=${this.ctrl?.loading ? 'Cargando…' : 'Todavía no hay grupos de modificadores.'}
           @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)}
           @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) =>
             this.ctrl.setSort(e.detail.sort, e.detail.dir)}
@@ -131,4 +159,4 @@ export class ErpModifiersItems extends LitElement {
   }
 }
 
-define('erp-modifiers-items', ErpModifiersItems);
+define('erp-modifiers-groups', ErpModifiersGroups);

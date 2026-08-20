@@ -3,11 +3,11 @@
   "module": "modifiers",
   "consumes": {
     "queries": [
-      "modifiers.items.list"
+      "modifiers.groups.list"
     ],
     "optional_queries": [],
     "commands": [
-      "modifiers.items.create"
+      "modifiers.groups.create"
     ],
     "events": [],
     "slots": []

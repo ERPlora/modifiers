@@ -1,0 +1,29 @@
+[
+  {
+    "id": "grp-1",
+    "name": "Punto de la carne",
+    "kitchen_name": "PUNTO",
+    "min_choices": 1,
+    "max_choices": 1,
+    "allow_repeat": 0,
+    "sort_order": 10
+  },
+  {
+    "id": "grp-2",
+    "name": "Extras",
+    "kitchen_name": "",
+    "min_choices": 0,
+    "max_choices": 0,
+    "allow_repeat": 1,
+    "sort_order": 20
+  },
+  {
+    "id": "grp-3",
+    "name": "Sin ingredientes",
+    "kitchen_name": "SIN",
+    "min_choices": 0,
+    "max_choices": 5,
+    "allow_repeat": 0,
+    "sort_order": 30
+  }
+]

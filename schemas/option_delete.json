@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "modifiers.options.delete",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "option_id"
+  ],
+  "properties": {
+    "option_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Opcion a borrar."
+    }
+  }
+}

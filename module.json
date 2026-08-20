@@ -1,41 +1,41 @@
 {
   "id": "modifiers",
-  "name": "Modifiers",
+  "name": "Modificadores",
   "version": "0.1.0",
   "agent": {
-    "description": "Módulo modifiers.",
+    "description": "Grupos de modificadores y suplementos ('sin cebolla', '+queso +1 EUR') para todo lo que se vende: productos y servicios. Dueno unico del catalogo (ADR-0376).",
     "keywords": [
+      "modificadores",
+      "suplementos",
+      "extras",
+      "opciones",
       "modifiers",
-      "items"
+      "add-ons"
     ]
   },
   "depends_on": [],
   "permissions": [
-    "modifiers.view_item",
-    "modifiers.add_item",
-    "modifiers.change_item",
-    "modifiers.delete_item"
+    "modifiers.view_modifier",
+    "modifiers.manage_modifier"
   ],
   "role_permissions": {
     "admin": [
       "*"
     ],
     "manager": [
-      "modifiers.view_item",
-      "modifiers.add_item",
-      "modifiers.change_item",
-      "modifiers.delete_item"
+      "modifiers.view_modifier",
+      "modifiers.manage_modifier"
     ],
     "employee": [
-      "modifiers.view_item"
+      "modifiers.view_modifier"
     ]
   },
   "navigation": [
     {
-      "id": "items",
-      "label": "Items",
-      "icon": "list",
-      "component": "erp-modifiers-items"
+      "id": "groups",
+      "label": "Modificadores",
+      "icon": "options-outline",
+      "component": "erp-modifiers-groups"
     }
   ],
   "migrations": {
@@ -44,57 +44,186 @@
     ]
   },
   "queries": {
-    "modifiers.items.list": {
-      "permission": "modifiers.view_item",
-      "sql": "queries/items_list.sql",
+    "modifiers.groups.list": {
+      "permission": "modifiers.view_modifier",
+      "sql": "queries/groups_list.sql",
       "list": {
         "search": [
           "name",
-          "code"
+          "kitchen_name"
         ],
         "sort": [
           "name",
-          "code",
-          "amount",
-          "created_at"
+          "sort_order",
+          "min_choices",
+          "max_choices"
         ],
-        "default_sort": "name",
+        "default_sort": "sort_order",
         "default_dir": "asc",
         "filters": {
-          "amount": {
-            "op": "range"
+          "name": {
+            "op": "like"
           }
         },
         "page_size": 50
       },
       "ai": {
-        "description": "Lista los items del módulo modifiers."
+        "description": "Lista los grupos de modificadores. min_choices >= 1 significa que el grupo es obligatorio."
+      },
+      "expose_api": true
+    },
+    "modifiers.groups.get": {
+      "permission": "modifiers.view_modifier",
+      "sql": "queries/groups_get.sql",
+      "ai": {
+        "description": "Detalle de un grupo de modificadores por id."
       }
     },
-    "modifiers.items.get": {
-      "permission": "modifiers.view_item",
-      "sql": "queries/items_get.sql",
+    "modifiers.options.list": {
+      "permission": "modifiers.view_modifier",
+      "sql": "queries/options_list.sql",
       "ai": {
-        "description": "Detalle de un item por id."
+        "description": "Opciones de un grupo, con su delta de precio."
       }
+    },
+    "modifiers.for_target": {
+      "permission": "modifiers.view_modifier",
+      "sql": "queries/for_target.sql",
+      "ai": {
+        "description": "Los grupos y opciones que aplican a lo que se va a vender. Es lo que consume el TPV antes de anadir una linea."
+      },
+      "expose_api": true
     }
   },
   "commands": {
-    "modifiers.items.create": {
-      "permission": "modifiers.add_item",
+    "modifiers.groups.create": {
+      "permission": "modifiers.manage_modifier",
       "transaction": true,
       "sql": [
-        "commands/items_create.sql"
+        "commands/group_create.sql"
       ],
+      "schema": "schemas/group_create.json",
       "emit": [
-        "modifiers.item.created"
+        "modifiers.group.created"
       ],
       "ai": {
-        "description": "Crea un item en modifiers."
+        "description": "Crea un grupo de modificadores."
+      }
+    },
+    "modifiers.groups.update": {
+      "permission": "modifiers.manage_modifier",
+      "transaction": true,
+      "sql": [
+        "commands/group_update.sql"
+      ],
+      "schema": "schemas/group_update.json",
+      "emit": [
+        "modifiers.group.updated"
+      ],
+      "ai": {
+        "description": "Edita un grupo de modificadores."
+      }
+    },
+    "modifiers.groups.delete": {
+      "permission": "modifiers.manage_modifier",
+      "transaction": true,
+      "sql": [
+        "commands/group_delete.sql",
+        "commands/group_delete_options.sql",
+        "commands/group_delete_links.sql"
+      ],
+      "schema": "schemas/group_delete.json",
+      "emit": [
+        "modifiers.group.deleted"
+      ],
+      "ai": {
+        "description": "Borra un grupo con sus opciones y sus enlaces."
+      }
+    },
+    "modifiers.options.create": {
+      "permission": "modifiers.manage_modifier",
+      "transaction": true,
+      "sql": [
+        "commands/option_create.sql"
+      ],
+      "schema": "schemas/option_create.json",
+      "emit": [
+        "modifiers.option.created"
+      ],
+      "ai": {
+        "description": "Anade una opcion a un grupo."
+      }
+    },
+    "modifiers.options.update": {
+      "permission": "modifiers.manage_modifier",
+      "transaction": true,
+      "sql": [
+        "commands/option_update.sql"
+      ],
+      "schema": "schemas/option_update.json",
+      "emit": [
+        "modifiers.option.updated"
+      ],
+      "ai": {
+        "description": "Edita una opcion."
+      }
+    },
+    "modifiers.options.delete": {
+      "permission": "modifiers.manage_modifier",
+      "transaction": true,
+      "sql": [
+        "commands/option_delete.sql"
+      ],
+      "schema": "schemas/option_delete.json",
+      "emit": [
+        "modifiers.option.deleted"
+      ],
+      "ai": {
+        "description": "Borra una opcion."
+      }
+    },
+    "modifiers.links.attach": {
+      "permission": "modifiers.manage_modifier",
+      "transaction": true,
+      "sql": [
+        "commands/link_attach.sql"
+      ],
+      "schema": "schemas/link_attach.json",
+      "emit": [
+        "modifiers.link.attached"
+      ],
+      "ai": {
+        "description": "Engancha un grupo a un producto, servicio o categoria."
+      }
+    },
+    "modifiers.links.detach": {
+      "permission": "modifiers.manage_modifier",
+      "transaction": true,
+      "sql": [
+        "commands/link_detach.sql"
+      ],
+      "schema": "schemas/link_detach.json",
+      "emit": [
+        "modifiers.link.detached"
+      ],
+      "ai": {
+        "description": "Suelta un grupo de un articulo."
       }
     }
   },
   "ui": {
     "entry": "dist/modifiers.esm.js"
+  },
+  "events": {
+    "emits": [
+      "modifiers.group.created",
+      "modifiers.group.updated",
+      "modifiers.group.deleted",
+      "modifiers.option.created",
+      "modifiers.option.updated",
+      "modifiers.option.deleted",
+      "modifiers.link.attached",
+      "modifiers.link.detached"
+    ]
   }
 }

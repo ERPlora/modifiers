@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "modifiers.groups.delete",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "group_id"
+  ],
+  "properties": {
+    "group_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Grupo a borrar. Arrastra sus opciones y sus enlaces."
+    }
+  }
+}

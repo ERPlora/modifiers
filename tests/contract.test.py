@@ -118,6 +118,30 @@ for n, line in enumerate(sql.splitlines(), 1):
             f"whole module at install time, and `erplora validate` does not catch it"
         )
 
+# --- 5 · todo evento emitido está DECLARADO -------------------------------------------------
+# Un handler que emite un evento que su módulo no declara hace FALLAR el command en runtime, y se
+# descubre en producción. Barato de comprobar aquí.
+declared = set((manifest.get("events") or {}).get("emits") or [])
+for cmd, spec in (manifest.get("commands") or {}).items():
+    for event in spec.get("emit") or []:
+        check(
+            event in declared,
+            f"{cmd} emits `{event}` but events.emits does not declare it — the runtime fails the "
+            f"whole command when that happens",
+        )
+
+# --- 6 · cada fichero SQL declarado existe --------------------------------------------------
+for block in ("queries", "commands"):
+    for name, spec in (manifest.get(block) or {}).items():
+        paths = spec.get("sql")
+        for rel in [paths] if isinstance(paths, str) else (paths or []):
+            check((MODULE_DIR / rel).exists(),
+                  f"{name} points at {rel}, which is not in the package")
+        schema = spec.get("schema")
+        if schema:
+            check((MODULE_DIR / schema).exists(),
+                  f"{name} points at schema {schema}, which is not in the package")
+
 if failures:
     print(f"✗ {len(failures)} contract failure(s):", file=sys.stderr)
     for f in failures:
@@ -125,4 +149,5 @@ if failures:
     sys.exit(1)
 
 print("✓ modifiers contract (ADR-0376): obligation is a number, the link is opaque, "
-      "a modifier is not a variant, tax inherits and never overrides")
+      "a modifier is not a variant, tax inherits and never overrides, "
+      "every emitted event is declared, every declared file exists")
