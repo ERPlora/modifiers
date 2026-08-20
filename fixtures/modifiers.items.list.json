@@ -1,0 +1,58 @@
+[
+  {
+    "id": "items-1",
+    "name": "Alfa",
+    "code": "ITE-100",
+    "amount": 12.5,
+    "created_at": "2026-01-01T10:00:00Z"
+  },
+  {
+    "id": "items-2",
+    "name": "Bravo",
+    "code": "ITE-101",
+    "amount": 25,
+    "created_at": "2026-01-02T10:00:00Z"
+  },
+  {
+    "id": "items-3",
+    "name": "Charlie",
+    "code": "ITE-102",
+    "amount": 37.5,
+    "created_at": "2026-01-03T10:00:00Z"
+  },
+  {
+    "id": "items-4",
+    "name": "Delta",
+    "code": "ITE-103",
+    "amount": 50,
+    "created_at": "2026-01-04T10:00:00Z"
+  },
+  {
+    "id": "items-5",
+    "name": "Echo",
+    "code": "ITE-104",
+    "amount": 62.5,
+    "created_at": "2026-01-05T10:00:00Z"
+  },
+  {
+    "id": "items-6",
+    "name": "Foxtrot",
+    "code": "ITE-105",
+    "amount": 75,
+    "created_at": "2026-01-06T10:00:00Z"
+  },
+  {
+    "id": "items-7",
+    "name": "Golf",
+    "code": "ITE-106",
+    "amount": 87.5,
+    "created_at": "2026-01-07T10:00:00Z"
+  },
+  {
+    "id": "items-8",
+    "name": "Hotel",
+    "code": "ITE-107",
+    "amount": 100,
+    "created_at": "2026-01-08T10:00:00Z"
+  }
+]

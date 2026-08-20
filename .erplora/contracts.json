@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "module": "modifiers",
+  "consumes": {
+    "queries": [
+      "modifiers.items.list"
+    ],
+    "optional_queries": [],
+    "commands": [
+      "modifiers.items.create"
+    ],
+    "events": [],
+    "slots": []
+  }
+}

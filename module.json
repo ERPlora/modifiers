@@ -1,0 +1,100 @@
+{
+  "id": "modifiers",
+  "name": "Modifiers",
+  "version": "0.1.0",
+  "agent": {
+    "description": "Módulo modifiers.",
+    "keywords": [
+      "modifiers",
+      "items"
+    ]
+  },
+  "depends_on": [],
+  "permissions": [
+    "modifiers.view_item",
+    "modifiers.add_item",
+    "modifiers.change_item",
+    "modifiers.delete_item"
+  ],
+  "role_permissions": {
+    "admin": [
+      "*"
+    ],
+    "manager": [
+      "modifiers.view_item",
+      "modifiers.add_item",
+      "modifiers.change_item",
+      "modifiers.delete_item"
+    ],
+    "employee": [
+      "modifiers.view_item"
+    ]
+  },
+  "navigation": [
+    {
+      "id": "items",
+      "label": "Items",
+      "icon": "list",
+      "component": "erp-modifiers-items"
+    }
+  ],
+  "migrations": {
+    "postgres": [
+      "migrations/postgres/001_init.sql"
+    ]
+  },
+  "queries": {
+    "modifiers.items.list": {
+      "permission": "modifiers.view_item",
+      "sql": "queries/items_list.sql",
+      "list": {
+        "search": [
+          "name",
+          "code"
+        ],
+        "sort": [
+          "name",
+          "code",
+          "amount",
+          "created_at"
+        ],
+        "default_sort": "name",
+        "default_dir": "asc",
+        "filters": {
+          "amount": {
+            "op": "range"
+          }
+        },
+        "page_size": 50
+      },
+      "ai": {
+        "description": "Lista los items del módulo modifiers."
+      }
+    },
+    "modifiers.items.get": {
+      "permission": "modifiers.view_item",
+      "sql": "queries/items_get.sql",
+      "ai": {
+        "description": "Detalle de un item por id."
+      }
+    }
+  },
+  "commands": {
+    "modifiers.items.create": {
+      "permission": "modifiers.add_item",
+      "transaction": true,
+      "sql": [
+        "commands/items_create.sql"
+      ],
+      "emit": [
+        "modifiers.item.created"
+      ],
+      "ai": {
+        "description": "Crea un item en modifiers."
+      }
+    }
+  },
+  "ui": {
+    "entry": "dist/modifiers.esm.js"
+  }
+}
