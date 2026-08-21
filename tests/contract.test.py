@@ -142,6 +142,30 @@ for block in ("queries", "commands"):
             check((MODULE_DIR / schema).exists(),
                   f"{name} points at schema {schema}, which is not in the package")
 
+# --- 7 · hay una lectura de catálogo COMPLETA, para que el precio no lo ponga el cliente ------
+# `sales` resuelve el precio del producto contra `inventory.products.for_sale`, no contra el
+# payload: «El precio SALE DEL CATÁLOGO si la línea dice ser de catálogo. El del payload es una
+# propuesta, no un hecho.» Un suplemento es dinero igual, así que necesita la misma autoridad —
+# sin ella, un cliente que envíe `price_delta: -500` se hace un descuento.
+#
+# `options.list` no sirve para eso: pide `group_id`, y el handler tiene ids de OPCIÓN sueltos.
+# Hace falta una lectura sin parámetros que el runtime pueda pre-cargar como contexto.
+catalog = (manifest.get("queries") or {}).get("modifiers.options.all")
+check(bool(catalog), "modifiers.options.all is missing: without a parameterless catalogue read, "
+                     "`sales` has no way to verify a modifier's price and would have to trust "
+                     "the payload")
+if catalog:
+    check(
+        "list" not in catalog,
+        "modifiers.options.all must NOT declare a `list` block: a paginated read hands the "
+        "handler the first 50 rows and stays silent about the rest (hub#650), which is a "
+        "price-authority hole, not a display bug",
+    )
+    sql_path = catalog.get("sql")
+    body = (MODULE_DIR / sql_path).read_text() if sql_path and (MODULE_DIR / sql_path).exists() else ""
+    for column in ("price_delta", "tax_category_key", "group_id"):
+        check(column in body, f"modifiers.options.all must return {column}")
+
 if failures:
     print(f"✗ {len(failures)} contract failure(s):", file=sys.stderr)
     for f in failures:

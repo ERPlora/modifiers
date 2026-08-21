@@ -93,6 +93,14 @@
         "description": "Los grupos y opciones que aplican a lo que se va a vender. Es lo que consume el TPV antes de anadir una linea."
       },
       "expose_api": true
+    },
+    "modifiers.options.all": {
+      "permission": "modifiers.view_modifier",
+      "sql": "queries/options_all.sql",
+      "ai": {
+        "description": "Catálogo completo de opciones de modificador con su delta de precio. Es la lectura autoritativa: quien cobra verifica el importe aquí, no en lo que le mandan."
+      },
+      "expose_api": true
     }
   },
   "commands": {
