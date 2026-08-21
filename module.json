@@ -1,7 +1,7 @@
 {
   "id": "modifiers",
   "name": "Modifiers",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "agent": {
     "description": "Grupos de modificadores y suplementos ('sin cebolla', '+queso +1 EUR') para todo lo que se vende: productos y servicios. Dueno unico del catalogo (ADR-0376).",
     "keywords": [
