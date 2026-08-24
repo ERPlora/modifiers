@@ -3,7 +3,7 @@
   "name": "Modifiers",
   "description": "Product modifiers for the point of sale: option groups with a price delta per option, so extras, sizes and add-ons are priced by the catalogue and not by whoever sends the order.",
   "author": "ERPlora",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "agent": {
     "description": "Grupos de modificadores y suplementos ('sin cebolla', '+queso +1 EUR') para todo lo que se vende: productos y servicios. Dueno unico del catalogo (ADR-0376).",
     "keywords": [
