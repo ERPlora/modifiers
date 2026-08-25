@@ -1,5 +1,6 @@
 {
   "name": "Modifiers",
+  "description": "Product modifiers for the point of sale: option groups with a price delta per option, so extras, sizes and add-ons are priced by the catalogue and not by whoever sends the order.",
   "navigation": {
     "groups": {
       "label": "Modifiers"
