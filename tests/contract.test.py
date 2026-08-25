@@ -166,6 +166,38 @@ if catalog:
     for column in ("price_delta", "tax_category_key", "group_id"):
         check(column in body, f"modifiers.options.all must return {column}")
 
+# --- 6 · the marketplace card speaks the hub's language -------------------------------------
+# The SaaS catalogue takes `name` and `description` from `locales/<lang>.json` (saas#1457), NOT
+# from module.json: English is the source and every served language must carry BOTH fields, or a
+# Spanish hub lists this app with a translated title over an English description (seen in
+# production on 2026-08-25). Every user-visible string ships in English + its Spanish (ADR-0055).
+LOCALES = MODULE_DIR / "locales"
+for language in ("en", "es"):
+    path = LOCALES / f"{language}.json"
+    check(path.exists(), f"locales/{language}.json is missing")
+    if path.exists():
+        catalogue = json.loads(path.read_text())
+        for field in ("name", "description"):
+            value = catalogue.get(field)
+            check(
+                isinstance(value, str) and value.strip() != "",
+                f"locales/{language}.json must carry a non-empty top-level `{field}`: the "
+                f"marketplace card reads it from here, not from module.json",
+            )
+        if language == "en":
+            check(
+                catalogue.get("description") == manifest.get("description"),
+                "locales/en.json `description` must equal module.json `description`: English is "
+                "the single source and the two must not drift",
+            )
+        else:
+            english = json.loads((LOCALES / "en.json").read_text())
+            for field in ("name", "description"):
+                check(
+                    catalogue.get(field) != english.get(field),
+                    f"locales/{language}.json `{field}` is a copy of the English text, not a translation",
+                )
+
 if failures:
     print(f"✗ {len(failures)} contract failure(s):", file=sys.stderr)
     for f in failures:
@@ -174,4 +206,5 @@ if failures:
 
 print("✓ modifiers contract (ADR-0376): obligation is a number, the link is opaque, "
       "a modifier is not a variant, tax inherits and never overrides, "
-      "every emitted event is declared, every declared file exists")
+      "every emitted event is declared, every declared file exists, "
+      "and the marketplace card speaks the hub's language")

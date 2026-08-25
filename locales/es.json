@@ -1,5 +1,6 @@
 {
   "name": "Modificadores",
+  "description": "Suplementos y opciones de producto para el TPV: grupos de opciones con un recargo por opción, para que extras, tamaños y añadidos se cobren según el catálogo y no según quien envía la comanda.",
   "navigation": {
     "groups": {
       "label": "Modificadores"
