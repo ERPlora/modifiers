@@ -198,6 +198,30 @@ for language in ("en", "es"):
                     f"locales/{language}.json `{field}` is a copy of the English text, not a translation",
                 )
 
+# --- 8 · the manifest root declares NOTHING the hub does not read (modifiers#6) --------------
+# `schemas/module.schema.json` is `additionalProperties: false` and has no place for authorship,
+# licence or long description: those four keys belong to the SaaS catalogue, not to the manifest.
+# Who authored a module is the PUBLISHER (ADR-0161, pm#130) — `create_module_from_git` already
+# falls back to the publisher's name — and `Module.long_description` comes from the README.
+#
+# Declaring one anyway is not a no-op: ADR-0286 puts it in the middle tier, so the hub INSTALLS
+# and reports `manifest_warnings[] = { path: "<key>" }` in `GET /api/modules`, and nothing in the
+# module's own gate goes red — `erplora validate` prints `⚠ clave desconocida` and still exits 0,
+# which is exactly how `"author": "ERPlora"` shipped in every published version up to v0.1.7.
+# The only red is in ANOTHER repo (hub#1243's catalogue sweep), hours later, for someone else.
+#
+# The trap is that `parse_module_metadata` in the SaaS reads all four from `module.json`, so the
+# key looks supported from the catalogue side while the contract forbids it.
+CATALOGUE_ONLY_ROOT_KEYS = ("author", "author_email", "license", "long_description")
+for key in CATALOGUE_ONLY_ROOT_KEYS:
+    check(
+        key not in manifest,
+        f"module.json must not declare a root `{key}`: the manifest contract "
+        f"(`additionalProperties: false`) has no such field, so the hub installs the module with "
+        f"a manifest warning nobody reads. Authorship is the publisher's (ADR-0161) and the "
+        f"catalogue fills it in — see modifiers#6",
+    )
+
 if failures:
     print(f"✗ {len(failures)} contract failure(s):", file=sys.stderr)
     for f in failures:
@@ -207,4 +231,5 @@ if failures:
 print("✓ modifiers contract (ADR-0376): obligation is a number, the link is opaque, "
       "a modifier is not a variant, tax inherits and never overrides, "
       "every emitted event is declared, every declared file exists, "
-      "and the marketplace card speaks the hub's language")
+      "the marketplace card speaks the hub's language, "
+      "and the manifest root declares nothing the hub does not read")
