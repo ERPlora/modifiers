@@ -130,11 +130,11 @@ const CONTROL_OPEN = new RegExp(`<(${CONTROL_TAGS.join('|')})(?=[\\s/>])`, 'g');
 const TABLE_OPEN = /<ok-data-table(?=[\s/>])/g;
 
 /** `data-testid="…"` written by hand. The Lit binding `data-testid=${…}` does NOT count here. */
-const LITERAL_TESTID = /(?<![\w-])data-testid="([^"]*)"/g;
+const LITERAL_TESTID = /(?<![:\w-])data-testid="([^"]*)"/g;
 /** The head of a Lit binding; the expression itself is read with balanced braces. */
 const COMPUTED_TESTID = /(?<![\w-])data-testid=\$\{/g;
 /** `testid="…"` — the namespace `<ok-data-table>` receives from its host. */
-const TABLE_TESTID = /(?<![\w-])testid="([^"]*)"/g;
+const TABLE_TESTID = /(?<![:\w-])testid="([^"]*)"/g;
 /**
  * Any `data-test…` attribute that is NOT `data-testid`. Playwright resolves `getByTestId` against
  * `data-testid` and nothing else, so `data-test` is a hook the robot cannot reach.
