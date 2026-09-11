@@ -129,26 +129,32 @@ export class ErpModifiersGroups extends LitElement {
     return html`
       <div>
         <header><h2>${t('ui.title')}</h2></header>
-        <form class="form" @submit=${(e: Event) => this.create(e)}>
+        <form class="form" data-testid="modifiers-form" @submit=${(e: Event) => this.create(e)}>
           <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.fieldName')}
-            .value=${this.newName}
+            data-testid="modifiers-name" .value=${this.newName}
             @ionInput=${(e: Event) => (this.newName = (e.target as HTMLInputElement).value)}></ion-input>
           <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.fieldKitchenName')}
-            .value=${this.newKitchenName}
+            data-testid="modifiers-kitchen-name" .value=${this.newKitchenName}
             @ionInput=${(e: Event) => (this.newKitchenName = (e.target as HTMLInputElement).value)}></ion-input>
           <ion-input mode="md" fill="outline" type="number" min="0" label-placement="floating"
-            label=${t('ui.fieldMin')} .value=${String(this.newMin)}
+            label=${t('ui.fieldMin')} data-testid="modifiers-min-choices" .value=${String(this.newMin)}
             @ionInput=${(e: Event) => (this.newMin = Number((e.target as HTMLInputElement).value) || 0)}></ion-input>
           <ion-input mode="md" fill="outline" type="number" min="0" label-placement="floating"
-            label=${t('ui.fieldMax')} .value=${String(this.newMax)}
+            label=${t('ui.fieldMax')} data-testid="modifiers-max-choices" .value=${String(this.newMax)}
             @ionInput=${(e: Event) => (this.newMax = Number((e.target as HTMLInputElement).value) || 0)}></ion-input>
-          <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newName}>
+          <ion-button type="submit" size="small" data-testid="modifiers-submit"
+            ?disabled=${this.saving || !this.newName}>
             ${this.saving ? t('ui.actionSaving') : t('ui.actionAdd')}
           </ion-button>
         </form>
-        ${this.formError ? html`<p class="err">${this.formError}</p>` : nothing}
-        ${this.ctrl?.error ? html`<p class="err">${this.ctrl.error}</p>` : nothing}
+        ${this.formError
+          ? html`<p class="err" data-testid="modifiers-error">${this.formError}</p>`
+          : nothing}
+        ${this.ctrl?.error
+          ? html`<p class="err" data-testid="modifiers-list-error">${this.ctrl.error}</p>`
+          : nothing}
         <ok-data-table
+          testid="modifiers-table"
           .serverSide=${true}
           .columns=${this.columns}
           .rows=${this.ctrl?.rows ?? []}
