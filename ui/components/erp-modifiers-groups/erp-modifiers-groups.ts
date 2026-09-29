@@ -4,7 +4,7 @@ import { state } from 'lit/decorators.js';
 import { define } from '@erplora/outfitkit/define';
 import '@erplora/outfitkit/ok-data-table';
 import type { DataTableColumn } from '@erplora/outfitkit';
-import { createListController } from '@erplora/module-sdk';
+import { createListController, dataTableShowsLoadError } from '@erplora/module-sdk';
 import type { ListController, ListClient, ListParams, ListPage } from '@erplora/module-sdk';
 // Catálogo i18n del módulo (ADR-0055/0199): esbuild inlinea estos JSON en el `dist` del WC. El
 // inglés es el idioma FUENTE y el español su traducción — ninguna cadena visible se hardcodea.
@@ -150,11 +150,13 @@ export class ErpModifiersGroups extends LitElement {
         ${this.formError
           ? html`<p class="err" data-testid="modifiers-error">${this.formError}</p>`
           : nothing}
-        ${this.ctrl?.error
+        ${this.ctrl?.error && !dataTableShowsLoadError()
           ? html`<p class="err" data-testid="modifiers-list-error">${this.ctrl.error}</p>`
           : nothing}
         <ok-data-table
           testid="modifiers-table"
+          .error=${this.ctrl?.error ?? ''}
+          @retry=${() => this.ctrl?.load()}
           .serverSide=${true}
           .columns=${this.columns}
           .rows=${this.ctrl?.rows ?? []}
