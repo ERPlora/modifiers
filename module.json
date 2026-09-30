@@ -34,7 +34,7 @@
   "navigation": [
     {
       "id": "groups",
-      "label": "Modificadores",
+      "label": "Modifiers",
       "icon": "options-outline",
       "component": "erp-modifiers-groups"
     }
