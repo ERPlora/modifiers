@@ -64,7 +64,7 @@ Nombre, «Nombre en la comanda», «Mínimo (1 o más = obligatorio)» y «Máxi
 «Añadir» (pasa a «Guardando…» mientras guarda y no se puede pulsar sin nombre). Debajo, la tabla de
 grupos con buscador «Buscar…» (busca por nombre y por nombre de comanda): Nombre (se ordena y se
 filtra), «En la comanda» (el nombre de cocina; si está vacío, el comercial), «Elección» (se ordena) y
-Orden (se ordena). La columna Elección dice la regla: «Opcional» u «Obligatorio (mín. 1)» y, si hay techo,
+Orden (se ordena). La columna Elección dice la regla: «Opcional» u «Obligatorio (mín. N)» (N es el mínimo del grupo) y, si hay techo,
 « · máx. 3». Páginas de 50. El formulario sale a todos los perfiles, también al empleado, que solo
 tiene permiso de consulta.
 Vacía: «Todavía no hay grupos de modificadores.». Cargando: «Cargando…» en el hueco de la tabla. Error de
@@ -97,10 +97,10 @@ Pasos:
 2. Si la comanda debe decir otra cosa, escribe «Nombre en la comanda»; vacío, cocina lee el nombre comercial.
 3. Pon el «Mínimo» (1 o más hace el grupo obligatorio; 0, opcional) y el «Máximo» (0 es sin techo).
 4. Pulsa «Añadir».
-5. Los campos se vacían y el grupo aparece en la tabla con su regla («Opcional» u «Obligatorio (mín. 1)», más « · máx. N»). Todavía no sale en el TPV: faltan sus opciones (MODIFIERS-F04) y su enganche (MODIFIERS-F05).
+5. Los campos se vacían y el grupo aparece en la tabla con su regla («Opcional» u «Obligatorio (mín. N)», con N el mínimo del grupo, más « · máx. N»). Todavía no sale en el TPV: faltan sus opciones (MODIFIERS-F04) y su enganche (MODIFIERS-F05).
 Entra: nombre, nombre de comanda, mínimo y máximo que escribe la persona; nada de otros componentes.
 Sale: el grupo, con orden 0 y «no se repite» (avisa: modifiers.group.created). No crea opciones ni enganches.
-Si falla: bajo el formulario sale el mensaje del servidor o, si no trae texto, «No se pudo crear el grupo»; los campos conservan lo escrito. Mínimo y máximo no pasan de 50 y el nombre no pasa de 255 caracteres (el servidor rechaza el resto con el detalle del esquema, texto sin confirmar). Un empleado no tiene permiso de gestión: el servidor responde pidiendo la aprobación de un responsable y el shell abre su diálogo de PIN; cómo queda el formulario después de aprobar, sin confirmar.
+Si falla: bajo el formulario sale el mensaje del error; «No se pudo crear el grupo» solo si lo que llega no es un error con mensaje (un error con mensaje vacío no pinta nada); los campos conservan lo escrito. Mínimo y máximo no pasan de 50 y el nombre no pasa de 255 caracteres (el servidor rechaza el resto con el detalle del esquema, texto sin confirmar). Un empleado no tiene permiso de gestión: el servidor responde pidiendo la aprobación de un responsable y el shell abre su diálogo de PIN; cómo queda el formulario después de aprobar, sin confirmar.
 Implicados: ninguno
 QA: qa-hub-restaurant §7.03
 
@@ -138,7 +138,7 @@ Pendiente de enlazar: taxes — categorías de IVA que puede llevar una opción
 QA: qa-hub-restaurant §7.03
 
 ### MODIFIERS-F05 Enganchar un grupo a productos, servicios o categorías, y soltarlo
-Estado: parcial — no hay pantalla (solo asistente o API); el TPV solo mira una categoría del artículo; un grupo enganchado a la vez al artículo y a su categoría puede salir con las opciones repetidas (sin confirmar en vivo); soltar un enganche que no existe contesta bien
+Estado: parcial — no hay pantalla (solo asistente o API); el TPV solo mira una categoría del artículo; un grupo enganchado a la vez al artículo y a su categoría rompe la hoja del TPV (MODIFIERS-F06); soltar un enganche que no existe contesta bien
 Actor: responsable, asistente
 Pantalla: asistente
 Pasos:
@@ -148,14 +148,14 @@ Pasos:
 4. Para quitarlo, pide soltar ese grupo de ese artículo; después puede volver a engancharse.
 Entra: el grupo, el tipo (producto, servicio o categoría) y el identificador del artículo, que da Inventario o Servicios.
 Sale: el enganche (avisa: modifiers.link.attached o modifiers.link.detached). Dos enganches vivos iguales no caben: el segundo se rechaza por duplicado.
-Si falla: un duplicado lo rechaza la base (texto sin confirmar). El módulo no comprueba que el identificador sea de un artículo real, ni que el grupo exista o no esté borrado: un enganche a un identificador que no existe se guarda y nunca se pregunta. Soltar un enganche que no existe contesta bien y avisa igual. El TPV pregunta por la categoría solo con la primera categoría que tiene cargada el artículo: un grupo colgado de la segunda no sale.
+Si falla: un duplicado lo rechaza la base (texto sin confirmar). El módulo no comprueba que el identificador sea de un artículo real, ni que el grupo exista o no esté borrado: un enganche a un identificador que no existe se guarda y nunca se pregunta. Soltar un enganche que no existe contesta bien y avisa igual. Un grupo enganchado a la vez al artículo y a su categoría sale dos veces de la consulta del TPV (una fila por enganche, sin quitar repetidos). El TPV pregunta por la categoría solo con la primera categoría que tiene cargada el artículo: un grupo colgado de la segunda no sale.
 Implicados: pendiente
 Pendiente de enlazar: inventory — productos y categorías a los que se engancha un grupo
 Pendiente de enlazar: services — servicios a los que se engancha un grupo
 QA: R-04
 
 ### MODIFIERS-F06 Elegir las opciones al vender un artículo
-Estado: parcial — el mínimo y el máximo solo los hace cumplir la hoja del TPV: el servidor no los comprueba ni que la opción pertenezca a un grupo del artículo; «se puede repetir» no se aplica en la venta; un grupo obligatorio sin opciones deja el artículo sin poder añadirse desde la hoja
+Estado: parcial — un grupo enganchado a la vez al artículo y a su categoría saca cada opción dos veces y cuenta cada elección dos veces (con máximo 1 no se puede completar nunca; con mínimo 2 se da por bueno con una elección); el mínimo y el máximo solo los hace cumplir la hoja del TPV: el servidor no los comprueba ni que la opción pertenezca a un grupo del artículo; «se puede repetir» no se aplica en la venta; un grupo obligatorio sin opciones deja el artículo sin poder añadirse desde la hoja
 Actor: cajero, responsable
 Pantalla: Venta: Vender
 Pasos:
@@ -165,7 +165,7 @@ Pasos:
 4. Pulsa «Añadir»: la línea entra con las opciones en el orden elegido y su precio ya sumado.
 Entra: los grupos y opciones de este módulo para ese artículo (`modifiers.for_target`: artículo, tipo y categoría).
 Sale: la línea con las opciones elegidas. Del TPV solo viaja el identificador de cada opción; el suplemento que viaja es un adelanto de pantalla que el servidor ignora (MODIFIERS-F07).
-Si falla: si Modificadores no está instalado, el artículo entra directo sin preguntar nada. El servidor no vuelve a comprobar el mínimo ni el máximo: quien llame por la API o el asistente puede añadir una línea con menos, más o ninguna opción de un grupo obligatorio. La hoja no lee «se puede repetir»: cada opción se elige una sola vez aunque el grupo lo permita. Un grupo obligatorio sin opciones, o con un mínimo mayor que su máximo, no se puede completar y el botón no se activa.
+Si falla: si Modificadores no está instalado, o si la lectura de sus grupos falla, el artículo entra directo sin preguntar nada y sin avisar, aunque tenga un grupo obligatorio. Si el grupo está enganchado a la vez al artículo y a su categoría, la hoja enseña cada opción dos veces y cuenta cada elección dos veces: con máximo 1 no se puede completar nunca (el artículo no se puede añadir desde la hoja) y con mínimo 2 se da por bueno con una sola elección; el cobro no se ve afectado (el servidor cobra cada opción elegida una vez). El servidor no vuelve a comprobar el mínimo ni el máximo: quien llame por la API o el asistente puede añadir una línea con menos, más o ninguna opción de un grupo obligatorio, o con la misma opción repetida aunque el grupo no lo permita (se cobra una vez por cada repetición). La hoja no lee «se puede repetir»: cada opción se elige una sola vez aunque el grupo lo permita. Un grupo obligatorio sin opciones, o con un mínimo mayor que su máximo, no se puede completar y el botón no se activa.
 Implicados: pendiente
 Pendiente de enlazar: sales — SALES-F11 añade suplementos a la línea
 Pendiente de enlazar: combos — COMBOS-F07 un componente del menú que lleva sus propias opciones (hoy la hoja del menú no las pregunta)
@@ -176,13 +176,13 @@ Estado: hecho
 Actor: sistema
 Pantalla: ninguna
 Pasos:
-1. Al cobrar (o al abrir la línea en una cuenta abierta), Venta lee el catálogo completo de opciones y pone cada suplemento al precio del catálogo; el precio que mande el navegador se ignora.
+1. En una venta directa, y al añadir la línea a una cuenta abierta, Venta lee el catálogo completo de opciones y pone cada suplemento al precio del catálogo; el precio que mande el navegador se ignora.
 2. Una opción sin categoría de IVA propia, o con la misma que la línea, se suma al precio de la línea y hereda su tipo; el suplemento puede ser negativo.
 3. Una opción con categoría de IVA distinta de la de su línea sale en una línea propia, hija de la del artículo, con su tipo; esa línea tiene que valer más de cero.
-4. En una cuenta abierta (mesa), el suplemento se congela al pedir: cambiar el catálogo después no cambia lo que paga esa mesa.
+4. En una cuenta abierta (mesa), el suplemento se congela al pedir, en la fila de la cuenta: al cobrarla, Venta usa esa fila y no el catálogo; cambiar o borrar la opción después no cambia lo que paga esa mesa.
 Entra: las opciones y sus suplementos de este módulo, leídos por Venta (`modifiers.options.all`, lectura completa sin paginar).
 Sale: la línea con el suplemento sumado y una copia congelada de las opciones (identificador, grupo, nombre, nombre de comanda, suplemento y categoría de IVA), o la línea hija; ninguna opción mueve stock.
-Si falla: sin Modificadores o sin que llegue el catálogo, una línea con suplementos se rechaza y no se cobra: «No se han podido cargar los suplementos, así que no se ha podido valorar la línea.». Opción borrada antes de cobrar: «Uno de los suplementos de la línea ya no está en el catálogo. Vuelve a elegirlo.». Hija con precio cero o negativo: «Un suplemento se factura en línea propia porque tributa a otro IVA, y esa línea no puede valer cero o menos. Ponle precio en Suplementos, o quítale la categoría fiscal.». En los tres casos la venta no se guarda.
+Si falla: en venta directa, sin Modificadores o sin que llegue el catálogo, una línea con suplementos se rechaza y no se cobra; también se rechaza al añadirla a una cuenta abierta. Una opción borrada se rechaza en venta directa y al añadir la línea; en una cuenta abierta que ya la llevaba se cobra a su precio congelado, sin rechazo. En el TPV, esos dos rechazos salen como «Error al cobrar» (Venta no tiene mensaje propio para ellos: hueco; sus frases del catálogo de errores de Venta no las pinta la pantalla de cobro, dónde se pintan, sin confirmar). Hija con precio cero o negativo: «Un suplemento de esa línea se factura aparte porque tributa a otro IVA, y una línea propia no puede valer cero o menos. Ponle precio en Suplementos, o quítale la categoría fiscal». En los rechazos la venta no se guarda.
 Implicados: pendiente
 Pendiente de enlazar: sales — SALES-F11 cobra el suplemento con su tipo de IVA
 Pendiente de enlazar: taxes — categoría de IVA propia de un suplemento
@@ -214,7 +214,7 @@ QA: R-04, qa-hub-restaurant §7.08
 | Nombre de cocina distinto del comercial | hecho | F02, F04, F08 |
 | Opciones con suplemento positivo, negativo o cero | parcial: sin pantalla | F04, F07 |
 | Enganchar a producto, servicio o categoría | parcial: sin pantalla | F05 |
-| Hoja de elección en el TPV con la regla y el precio | hecho | F06 |
+| Hoja de elección en el TPV con la regla y el precio | parcial: un grupo enganchado al artículo y a su categoría se cuenta doble | F06 |
 | Opciones en el orden en que se eligen | hecho | F06, F08 |
 | Elegir la misma opción más de una vez | no hecho: el campo existe y nada lo lee | F06 |
 | Opción con IVA propio como línea propia | hecho | F07 |
@@ -234,22 +234,25 @@ QA: R-04, qa-hub-restaurant §7.08
   servicio.
 - **Lo que lee de otros**: nada. No tiene dependencias ni lee consultas de otros módulos.
 - **Quién lo lee**: Venta lee `modifiers.for_target` (hoja del TPV) y `modifiers.options.all` (precio,
-  nombres y categoría de IVA al cobrar, al abrir una línea y al mandar a cocina). Cocina no lee este
+  nombres y categoría de IVA al cobrar una venta directa, al añadir una línea a una cuenta y al mandar a cocina) y la pantalla del
+  TPV lo lee para nombrar los suplementos en la precuenta. Cocina no lee este
   módulo: recibe el texto ya armado por Venta.
 - **Copias fuera del módulo**: Venta guarda en cada línea una copia congelada de las opciones elegidas
   (identificador, grupo, nombre, nombre de comanda, suplemento y categoría de IVA); Cocina guarda el
   texto de las opciones en la línea de la comanda. Lo que guarda cada uno se lee en su módulo.
 - **Datos personales** (inventario RGPD): ninguna tabla guarda datos de clientes. Las tres tablas
   guardan quién creó y quién cambió cada fila (identificador de usuario del hub). Los nombres y
-  suplementos son datos del negocio. Qué lleva dentro cada aviso del módulo (`modifiers.*`): sin
-  confirmar.
+  suplementos son datos del negocio. Cada aviso `modifiers.*` lleva los campos de la orden
+  (nombre, suplemento, ids…) más el negocio, el identificador del usuario del hub que la lanzó, la hora y
+  el id nuevo. Ningún dato de cliente.
 
 ## Reglas que no se rompen
 
 - **Aislamiento**: toda lectura filtra por el negocio y las ediciones y borrados llevan el negocio en
   su condición; cada fila nace con el suyo.
-- **El precio del suplemento lo decide el catálogo**, nunca el navegador: Venta ignora el que viaja y
-  rechaza la venta si no llega el catálogo o si la opción ya no existe.
+- **El precio del suplemento lo decide el catálogo**, nunca el navegador: Venta ignora el que viaja;
+  sin catálogo, o con una opción que ya no existe, no deja vender ni añadir la línea a una cuenta; lo ya
+  pedido en una cuenta abierta se cobra congelado.
 - **Una línea tiene un solo tipo de IVA**: la opción nunca reescribe el de la línea; con categoría
   propia distinta, se factura en su propia línea, que debe valer más de cero.
 - **Una cuenta abierta paga el suplemento que pidió**: se congela al pedir y no se recalcula al cobrar.
@@ -300,7 +303,7 @@ Contra `origin/main` de Modificadores v0.1.14, de Venta, de Cocina y `origin/dev
   la hoja del TPV alterna cada opción y la venta no lo lee (F06).
 - **Descripción de los esquemas**: «si no es 0, debe ser >= min_choices»; nada lo hace cumplir (ni
   esquema, ni SQL, ni pantalla), a diferencia de Combos (F02).
-- **Nombre del módulo**: Venta lo llama «Suplementos» en sus textos («Ponle precio en Suplementos») y
+- **Nombre del módulo**: Venta lo llama «Suplementos» en sus textos (en `ui.errorModifierChildPrice`: «Ponle precio en Suplementos») y
   su documento; el módulo se llama «Modificadores» en su pantalla y su manifiesto (F07).
 - **Manual de usuario** (`hand-book/modulos/modifiers.md`): coincide con el código en que la pantalla no
   crea opciones ni enganches; no dice que editar y borrar tampoco existen en pantalla, ni que un
