@@ -147,8 +147,7 @@ Pasos:
 Entra: el grupo, el tipo (producto, servicio o categoría) y el identificador del artículo, que da Inventario o Servicios.
 Sale: el enganche (avisa: modifiers.link.attached o modifiers.link.detached). Dos enganches vivos iguales no caben: el segundo se rechaza por duplicado.
 Si falla: un duplicado lo rechaza la base (texto sin confirmar). El módulo no comprueba que el identificador sea de un artículo real, ni que el grupo exista o no esté borrado: un enganche a un identificador que no existe se guarda y nunca se pregunta. Soltar un enganche que no existe contesta bien y avisa igual. Un grupo enganchado a la vez al artículo y a su categoría sale dos veces de la consulta del TPV (una fila por enganche, sin quitar repetidos). El TPV pregunta por la categoría solo con la primera categoría que tiene cargada el artículo: un grupo colgado de la segunda no sale.
-Implicados: REC_RESTAURANTE-F03
-Pendiente de enlazar: services — servicios a los que se engancha un grupo
+Implicados: SERVICES-F09, REC_RESTAURANTE-F03
 QA: R-04
 
 ### MODIFIERS-F06 Elegir las opciones al vender un artículo
