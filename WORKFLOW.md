@@ -101,7 +101,7 @@ Pasos:
 Entra: nombre, nombre de comanda, mínimo y máximo que escribe la persona; nada de otros componentes.
 Sale: el grupo, con orden 0 y «no se repite» (avisa: modifiers.group.created). No crea opciones ni enganches.
 Si falla: bajo el formulario sale el mensaje del error; «No se pudo crear el grupo» solo si lo que llega no es un error con mensaje (un error con mensaje vacío no pinta nada); los campos conservan lo escrito. Mínimo y máximo no pasan de 50 y el nombre no pasa de 255 caracteres (el servidor rechaza el resto con el detalle del esquema, texto sin confirmar). Un empleado no tiene permiso de gestión: el servidor responde pidiendo la aprobación de un responsable y el shell abre su diálogo de PIN; cómo queda el formulario después de aprobar, sin confirmar.
-Implicados: ninguno
+Implicados: REC_RESTAURANTE-F03
 QA: qa-hub-restaurant §7.03
 
 ### MODIFIERS-F03 Cambiar o borrar un grupo
@@ -116,8 +116,7 @@ Pasos:
 Entra: el identificador del grupo y los campos nuevos.
 Sale: el grupo cambiado (avisa: modifiers.group.updated) o borrado con sus opciones y enganches (avisa: modifiers.group.deleted). Lo ya vendido o pedido no cambia: Venta congela el suplemento en la línea.
 Si falla: el servidor rechaza un nombre vacío o un número fuera de rango. Un identificador que no existe no se rechaza: la orden contesta bien, no cambia nada y emite el aviso igual (sin comprobación de filas afectadas). Un grupo borrado deja de preguntarse al añadir el artículo; una cuenta abierta que ya lo llevaba conserva el suplemento congelado.
-Implicados: pendiente
-Pendiente de enlazar: sales — SALES-F11 deja de preguntar un grupo borrado
+Implicados: SALES-F11
 QA: ninguno
 
 ### MODIFIERS-F04 Añadir, cambiar o quitar las opciones de un grupo
@@ -133,8 +132,7 @@ Pasos:
 Entra: grupo, nombre, nombre de comanda, suplemento, categoría de IVA propia y orden.
 Sale: la opción (avisa: modifiers.option.created, updated o deleted). El borrado la retira del catálogo: las líneas ya pedidas conservan su copia congelada, salvo en la comanda de cocina (MODIFIERS-F08).
 Si falla: el servidor rechaza un nombre vacío o un campo fuera de esquema. El alta solo tiene la clave ajena al grupo: acepta el identificador de un grupo borrado y no mira de qué negocio es. Cambiar o borrar una opción que no existe contesta bien y avisa igual. Un cambio que omite el suplemento lo pone a 0 y borra la categoría de IVA propia.
-Implicados: pendiente
-Pendiente de enlazar: taxes — categorías de IVA que puede llevar una opción
+Implicados: REC_RESTAURANTE-F03
 QA: qa-hub-restaurant §7.03
 
 ### MODIFIERS-F05 Enganchar un grupo a productos, servicios o categorías, y soltarlo
@@ -149,8 +147,7 @@ Pasos:
 Entra: el grupo, el tipo (producto, servicio o categoría) y el identificador del artículo, que da Inventario o Servicios.
 Sale: el enganche (avisa: modifiers.link.attached o modifiers.link.detached). Dos enganches vivos iguales no caben: el segundo se rechaza por duplicado.
 Si falla: un duplicado lo rechaza la base (texto sin confirmar). El módulo no comprueba que el identificador sea de un artículo real, ni que el grupo exista o no esté borrado: un enganche a un identificador que no existe se guarda y nunca se pregunta. Soltar un enganche que no existe contesta bien y avisa igual. Un grupo enganchado a la vez al artículo y a su categoría sale dos veces de la consulta del TPV (una fila por enganche, sin quitar repetidos). El TPV pregunta por la categoría solo con la primera categoría que tiene cargada el artículo: un grupo colgado de la segunda no sale.
-Implicados: pendiente
-Pendiente de enlazar: inventory — productos y categorías a los que se engancha un grupo
+Implicados: REC_RESTAURANTE-F03
 Pendiente de enlazar: services — servicios a los que se engancha un grupo
 QA: R-04
 
@@ -166,9 +163,7 @@ Pasos:
 Entra: los grupos y opciones de este módulo para ese artículo (`modifiers.for_target`: artículo, tipo y categoría).
 Sale: la línea con las opciones elegidas. Del TPV solo viaja el identificador de cada opción; el suplemento que viaja es un adelanto de pantalla que el servidor ignora (MODIFIERS-F07).
 Si falla: si Modificadores no está instalado, o si la lectura de sus grupos falla, el artículo entra directo sin preguntar nada y sin avisar, aunque tenga un grupo obligatorio. Si el grupo está enganchado a la vez al artículo y a su categoría, la hoja enseña cada opción dos veces y cuenta cada elección dos veces: con máximo 1 no se puede completar nunca (el artículo no se puede añadir desde la hoja) y con mínimo 2 se da por bueno con una sola elección; el cobro no se ve afectado (el servidor cobra cada opción elegida una vez). El servidor no vuelve a comprobar el mínimo ni el máximo: quien llame por la API o el asistente puede añadir una línea con menos, más o ninguna opción de un grupo obligatorio, o con la misma opción repetida aunque el grupo no lo permita (se cobra una vez por cada repetición). La hoja no lee «se puede repetir»: cada opción se elige una sola vez aunque el grupo lo permita. Un grupo obligatorio sin opciones, o con un mínimo mayor que su máximo, no se puede completar y el botón no se activa.
-Implicados: pendiente
-Pendiente de enlazar: sales — SALES-F11 añade suplementos a la línea
-Pendiente de enlazar: combos — COMBOS-F07 un componente del menú que lleva sus propias opciones (hoy la hoja del menú no las pregunta)
+Implicados: COMBOS-F07, SALES-F11, REC_RESTAURANTE-F06
 QA: R-04, qa-hub-restaurant §7.07
 
 ### MODIFIERS-F07 Cobrar el suplemento: precio y IVA
@@ -183,9 +178,7 @@ Pasos:
 Entra: las opciones y sus suplementos de este módulo, leídos por Venta (`modifiers.options.all`, lectura completa sin paginar).
 Sale: la línea con el suplemento sumado y una copia congelada de las opciones (identificador, grupo, nombre, nombre de comanda, suplemento y categoría de IVA), o la línea hija; ninguna opción mueve stock.
 Si falla: en venta directa, sin Modificadores o sin que llegue el catálogo, una línea con suplementos se rechaza y no se cobra; también se rechaza al añadirla a una cuenta abierta. Una opción borrada se rechaza en venta directa y al añadir la línea; en una cuenta abierta que ya la llevaba se cobra a su precio congelado, sin rechazo. En el TPV, esos dos rechazos salen como «Error al cobrar» (Venta no tiene mensaje propio para ellos: hueco; sus frases del catálogo de errores de Venta no las pinta la pantalla de cobro, dónde se pintan, sin confirmar). Hija con precio cero o negativo: «Un suplemento de esa línea se factura aparte porque tributa a otro IVA, y una línea propia no puede valer cero o menos. Ponle precio en Suplementos, o quítale la categoría fiscal». En los rechazos la venta no se guarda.
-Implicados: pendiente
-Pendiente de enlazar: sales — SALES-F11 cobra el suplemento con su tipo de IVA
-Pendiente de enlazar: taxes — categoría de IVA propia de un suplemento
+Implicados: SALES-F11, REC_RESTAURANTE-F11
 QA: qa-hub-restaurant §7.03
 
 ### MODIFIERS-F08 Que el suplemento salga en la comanda de cocina
@@ -195,13 +188,11 @@ Pantalla: ninguna
 Pasos:
 1. El camarero manda la cuenta a cocina.
 2. Venta arma la comanda con las líneas guardadas y, para cada opción, pone el nombre de comanda del catálogo (si está vacío, el comercial).
-3. Cocina guarda en la línea de la comanda las opciones separadas por «, » en el orden en que se eligieron; cada una usa su nombre de comanda, o el comercial, o el código si no hay otro (dónde las pinta la pantalla de cocina, sin confirmar).
+3. Cocina guarda en la línea de la comanda las opciones separadas por «, » en el orden en que se eligieron; cada una usa su nombre de comanda, o el comercial, o el código si no hay otro (la pantalla de cocina y el papel las pintan debajo del plato, separadas por comas: KITCHEN-F07).
 Entra: las opciones congeladas en cada línea de la cuenta y el catálogo vigente de opciones.
 Sale: el aviso de comanda enviada (order.fired) con las opciones nombradas; Cocina las guarda como un texto en la línea de la comanda. Nada se avisa al camarero si el nombre cae al código.
 Si falla: la comanda no se frena por falta de catálogo: sale igual, con el código en lugar del nombre, porque cocina parada es peor. Una opción que ya no está en el catálogo pierde el nombre congelado y sale como código.
-Implicados: pendiente
-Pendiente de enlazar: sales — SALES-F20 envía la comanda a cocina con los suplementos
-Pendiente de enlazar: kitchen — pintar los suplementos de la línea en la comanda
+Implicados: KITCHEN-F07, SALES-F20, REC_RESTAURANTE-F07
 QA: R-04, qa-hub-restaurant §7.08
 
 ## Cobertura contra la referencia
