@@ -130,7 +130,7 @@ Pasos:
 4. Para cambiarla o quitarla, pide el cambio o el borrado de esa opción.
 5. La opción sale en la hoja del TPV de los artículos que llevan el grupo (MODIFIERS-F06).
 Entra: grupo, nombre, nombre de comanda, suplemento, categoría de IVA propia y orden.
-Sale: la opción (avisa: modifiers.option.created, updated o deleted). El borrado la retira del catálogo: las líneas ya pedidas conservan su copia congelada, salvo en la comanda de cocina (MODIFIERS-F08).
+Sale: la opción (avisa: modifiers.option.created, updated o deleted). El borrado la retira del catálogo: las líneas ya pedidas conservan su copia congelada, también en la comanda de cocina (MODIFIERS-F08).
 Si falla: el servidor rechaza un nombre vacío o un campo fuera de esquema. El alta solo tiene la clave ajena al grupo: acepta el identificador de un grupo borrado y no mira de qué negocio es. Cambiar o borrar una opción que no existe contesta bien y avisa igual. Un cambio que omite el suplemento lo pone a 0 y borra la categoría de IVA propia.
 Implicados: REC_RESTAURANTE-F03
 QA: qa-hub-restaurant §7.03
@@ -181,16 +181,16 @@ Implicados: SALES-F11, REC_RESTAURANTE-F11
 QA: qa-hub-restaurant §7.03
 
 ### MODIFIERS-F08 Que el suplemento salga en la comanda de cocina
-Estado: parcial — la comanda vuelve a leer los nombres del catálogo de hoy: una opción borrada o renombrada entre pedirla y mandarla sale con un código o con el nombre nuevo, no con el nombre que se congeló; sin Modificadores, solo el código
+Estado: hecho
 Actor: sistema
 Pantalla: ninguna
 Pasos:
 1. El camarero manda la cuenta a cocina.
-2. Venta arma la comanda con las líneas guardadas y, para cada opción, pone el nombre de comanda del catálogo (si está vacío, el comercial).
+2. Venta arma la comanda con las líneas guardadas y, para cada opción, pone el nombre de comanda y el comercial que la cuenta congeló al pedirla (sales#522): renombrar o borrar la opción entre pedirla y mandarla no cambia lo que lee cocina. Solo una línea guardada antes de que la cuenta congelara los nombres los toma del catálogo de hoy.
 3. Cocina guarda en la línea de la comanda las opciones separadas por «, » en el orden en que se eligieron; cada una usa su nombre de comanda, o el comercial, o el código si no hay otro (la pantalla de cocina y el papel las pintan debajo del plato, separadas por comas: KITCHEN-F07).
-Entra: las opciones congeladas en cada línea de la cuenta y el catálogo vigente de opciones.
+Entra: las opciones congeladas en cada línea de la cuenta, con sus nombres; el catálogo vigente solo para una línea sin nombres congelados.
 Sale: el aviso de comanda enviada (order.fired) con las opciones nombradas; Cocina las guarda como un texto en la línea de la comanda. Nada se avisa al camarero si el nombre cae al código.
-Si falla: la comanda no se frena por falta de catálogo: sale igual, con el código en lugar del nombre, porque cocina parada es peor. Una opción que ya no está en el catálogo pierde el nombre congelado y sale como código.
+Si falla: la comanda no se frena por falta de catálogo: una línea sin nombres congelados sale igual, con el código en lugar del nombre, porque cocina parada es peor.
 Implicados: KITCHEN-F07, SALES-F20, REC_RESTAURANTE-F07
 QA: R-04, qa-hub-restaurant §7.08
 
@@ -209,7 +209,7 @@ QA: R-04, qa-hub-restaurant §7.08
 | Elegir la misma opción más de una vez | no hecho: el campo existe y nada lo lee | F06 |
 | Opción con IVA propio como línea propia | hecho | F07 |
 | Congelar el suplemento al pedir en la mesa | hecho | F07 |
-| Salir en la comanda con nombre de cocina | parcial: nombre del catálogo de hoy | F08 |
+| Salir en la comanda con nombre de cocina | hecho | F08 |
 | Modificador sin stock ni coste propio | hecho (por diseño) | F07 |
 | Editar y borrar en pantalla | no hecho | F03, F04 |
 | Activar y desactivar un grupo o una opción | no hecho: solo borrar o soltar | — |
